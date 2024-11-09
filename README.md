@@ -4,7 +4,7 @@ A stream style zip compressor running in browser.
 
 ## build
 
-wasm-pack build --release
+wasm-pack build --release --target web
 
 ## Usage
 
