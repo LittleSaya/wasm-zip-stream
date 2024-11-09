@@ -10,6 +10,7 @@ repository = "https://github.com/LittleSaya/wasm-zip-stream"
 readme = "README.md"
 keywords = ["zip", "wasm", "stream", "compress"]
 categories = ["compression", "wasm", "web-programming"]
+exclude = ["example"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
