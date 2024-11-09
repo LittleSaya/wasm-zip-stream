@@ -1,0 +1,36 @@
+/* tslint:disable */
+/* eslint-disable */
+export const memory: WebAssembly.Memory;
+export function __wbg_fileheader_free(a: number, b: number): void;
+export function __wbg_wasmerror_free(a: number, b: number): void;
+export function __wbg_get_wasmerror_code(a: number): number;
+export function __wbg_set_wasmerror_code(a: number, b: number): void;
+export function __wbg_get_wasmerror_arg0(a: number, b: number): void;
+export function __wbg_set_wasmerror_arg0(a: number, b: number, c: number): void;
+export function __wbg_get_wasmerror_arg1(a: number, b: number): void;
+export function __wbg_set_wasmerror_arg1(a: number, b: number, c: number): void;
+export function __wbg_get_wasmerror_arg2(a: number, b: number): void;
+export function __wbg_set_wasmerror_arg2(a: number, b: number, c: number): void;
+export function __wbg_get_wasmerror_arg3(a: number, b: number): void;
+export function __wbg_set_wasmerror_arg3(a: number, b: number, c: number): void;
+export function __wbg_handles_free(a: number, b: number): void;
+export function handles_scan(a: number, b: number): number;
+export function handles_compress(a: number, b: number, c: number, d: number): number;
+export function handles_compress_transform(a: number, b: number, c: number, d: number, e: number, f: number): number;
+export function handles_transform(a: number, b: number, c: number): number;
+export function handles_recover(a: number, b: number, c: number): number;
+export function handles_register_scan_progress(a: number, b: number): void;
+export function handles_register_compress_progress(a: number, b: number): void;
+export function handles_register_average_speed(a: number, b: number): void;
+export function handles_register_current_speed(a: number, b: number): void;
+export function handles_register_current_file(a: number, b: number): void;
+export function initialize_context(a: number): number;
+export function __wbindgen_malloc(a: number, b: number): number;
+export function __wbindgen_realloc(a: number, b: number, c: number, d: number): number;
+export const __wbindgen_export_2: WebAssembly.Table;
+export function _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h5b3f9cd6c38a6389(a: number, b: number, c: number): void;
+export function _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h1c265f1720677f49(a: number, b: number, c: number): void;
+export function __wbindgen_add_to_stack_pointer(a: number): number;
+export function __wbindgen_free(a: number, b: number, c: number): void;
+export function __wbindgen_exn_store(a: number): void;
+export function wasm_bindgen__convert__closures__invoke2_mut__h76ed5b8c1aa880a0(a: number, b: number, c: number, d: number): void;

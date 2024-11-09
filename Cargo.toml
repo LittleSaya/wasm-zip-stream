@@ -3,6 +3,10 @@ name = "wasm-zip-stream"
 version = "0.1.0"
 authors = ["April is a Rabbit <16049823+LittleSaya@users.noreply.github.com>"]
 edition = "2018"
+description = "A stream style zip compressing tool targeting wasm"
+repository = "https://github.com/LittleSaya/wasm-zip-stream"
+keywords = ["zip", "wasm", "stream", "compress"]
+categories = ["compression", "wasm", "web-programming"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
