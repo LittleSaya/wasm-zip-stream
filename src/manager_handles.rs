@@ -9,18 +9,55 @@ extern "C" {
 
   #[wasm_bindgen(js_namespace = ["window", "wzs"])]
   fn file_system_directory_reader__read_entries(directory_reader: &web_sys::FileSystemDirectoryReader) -> js_sys::Promise;
+
+  #[wasm_bindgen(js_namespace = ["window", "wzs", "promises"], js_name = create)]
+  fn create_promise(id: &str) -> js_sys::Promise;
+
+  #[wasm_bindgen(js_namespace = ["window", "wzs", "promises"], js_name = resolve)]
+  fn resolve_promise(id: &str);
+
+  #[wasm_bindgen(js_namespace = ["window", "wzs", "promises"], js_name = reject)]
+  fn reject_promise(id: &str, err: &JsValue);
 }
+
+const PROMISE_ID_WORKER_LOADED: &'static str = "worker_loaded";
+
+#[wasm_bindgen]
+extern "C" {
+  pub type GenericMessageData;
+
+  #[wasm_bindgen(method, getter)]
+  pub fn generic_message_type(this: &GenericMessageData) -> String;
+}
+
+const GENERIC_MESSAGE_TYPE_WORKER: &'static str = "worker";
+
+#[wasm_bindgen]
+extern "C" {
+  pub type WorkerMessageData;
+
+  #[wasm_bindgen(method, getter)]
+  pub fn worker_message_type(this: &WorkerMessageData) -> String;
+}
+
+const WORKER_MESSAGE_TYPE_LOADED: &'static str = "loaded";
 
 #[wasm_bindgen]
 pub struct ManagerHandles {
   context       : Rc<ManagerContext>,
+  worker_path   : String,
+  big_workers   : Vec<web_sys::Worker>,
+  small_workers : Vec<web_sys::Worker>,
   scan_progress : Option<js_sys::Function>,
 }
 
 impl ManagerHandles {
-  pub fn new(context: Rc<ManagerContext>) -> Self {
+  pub fn new(context: Rc<ManagerContext>, worker_path: String) -> Self {
     Self {
       context,
+      worker_path,
+      big_workers: Vec::new(),
+      small_workers: Vec::new(),
       scan_progress: None,
     }
   }
@@ -44,6 +81,90 @@ impl ManagerHandles {
     self.scan_internal(entries).await?;
 
     Ok(JsValue::from_f64(self.context.entry_list.borrow().len() as f64))
+  }
+
+  pub async fn compress(&mut self, number_of_workers: u32) -> Result<JsValue, WasmError> {
+    #[allow(non_snake_case)]
+    let LOCATION = utils::type_name(&Self::compress);
+
+    if self.big_workers.len() != 0 || self.small_workers.len() != 0 {
+      return Err(WasmError::workers_not_cleaned(LOCATION, &format!("{}", self.big_workers.len()), &format!("{}", self.small_workers.len())));
+    }
+
+    if number_of_workers == 0 {
+      return Err(WasmError::no_workers(LOCATION));
+    }
+
+    let number_of_small_workers = number_of_workers / 2_u32;
+    let number_of_big_workers = number_of_workers - number_of_small_workers;
+
+    // load workers
+    {
+      let mut ready_count = 0_u32;
+      let ready_total = number_of_workers;
+      let message_handler = Closure::<dyn FnMut(web_sys::MessageEvent)>::new(move |ev: web_sys::MessageEvent| {
+        let data: GenericMessageData = ev.data().unchecked_into();
+        let generic_message_type = data.generic_message_type();
+        if generic_message_type == GENERIC_MESSAGE_TYPE_WORKER {
+          let data: WorkerMessageData = data.unchecked_into();
+          let worker_message_type = data.worker_message_type();
+          if worker_message_type == WORKER_MESSAGE_TYPE_LOADED {
+            ready_count += 1;
+            if ready_count == ready_total {
+              resolve_promise(PROMISE_ID_WORKER_LOADED);
+            }
+          }
+        }
+      }).into_js_value();
+
+      for i in 0..number_of_big_workers {
+        let worker_option = web_sys::WorkerOptions::new();
+        worker_option.set_name(&format!("big_worker_{:0>3}", i));
+        worker_option.set_type(web_sys::WorkerType::Module);
+        let worker = match web_sys::Worker::new_with_options(&self.worker_path, &worker_option) {
+          Ok(w) => w,
+          Err(e) => return Err(WasmError::fail_to_create_worker(LOCATION, &format!("{:?}", e))),
+        };
+
+        if let Err(e) = worker.add_event_listener_with_callback("message", message_handler.unchecked_ref()) {
+          return Err(WasmError::fail_to_listen_event(LOCATION, "message", &format!("{:?}", e)));
+        }
+
+        self.big_workers.push(worker);
+      }
+
+      for i in 0..number_of_small_workers {
+        let worker_option = web_sys::WorkerOptions::new();
+        worker_option.set_name(&format!("small_worker_{:0>3}", i));
+        worker_option.set_type(web_sys::WorkerType::Module);
+        let worker = match web_sys::Worker::new_with_options(&self.worker_path, &worker_option) {
+          Ok(w) => w,
+          Err(e) => return Err(WasmError::fail_to_create_worker(LOCATION, &format!("{:?}", e))),
+        };
+
+        if let Err(e) = worker.add_event_listener_with_callback("message", message_handler.unchecked_ref()) {
+          return Err(WasmError::fail_to_listen_event(LOCATION, "message", &format!("{:?}", e)));
+        }
+
+        self.small_workers.push(worker);
+      }
+
+      utils::await_promise(create_promise(PROMISE_ID_WORKER_LOADED)).await.unwrap();
+
+      for worker in self.big_workers.iter() {
+        if let Err(e) = worker.remove_event_listener_with_callback("message", message_handler.unchecked_ref()) {
+          return Err(WasmError::fail_to_unlisten_event(LOCATION, "message", &format!("{:?}", e)));
+        }
+      }
+
+      for worker in self.small_workers.iter() {
+        if let Err(e) = worker.remove_event_listener_with_callback("message", message_handler.unchecked_ref()) {
+          return Err(WasmError::fail_to_unlisten_event(LOCATION, "message", &format!("{:?}", e)));
+        }
+      }
+    }
+
+    Ok(JsValue::UNDEFINED)
   }
 
   /// Register "scan_progress" callback.

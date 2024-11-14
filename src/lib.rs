@@ -1,6 +1,9 @@
+use std::{mem, rc::Rc};
+
 use context::Context;
 use handles::Handles;
 use manager_context::ManagerContext;
+use manager_handles::ManagerHandles;
 use wasm_error::WasmError;
 use prelude::*;
 
@@ -28,6 +31,9 @@ pub fn initialize_context(create_writer: js_sys::Function) -> Handles {
 }
 
 #[wasm_bindgen]
-pub fn create_manager(create_writer: js_sys::Function) -> manager_handles::ManagerHandles {
-  ManagerContext::new(create_writer)
+pub fn create_manager(create_writer: js_sys::Function, worker_path: String) -> ManagerHandles {
+  let context = ManagerContext::new(create_writer);
+  let handles = ManagerHandles::new(Rc::clone(&context), worker_path);
+  mem::forget(context);
+  handles
 }

@@ -190,4 +190,74 @@ impl WasmError {
       "",
     )
   }
+
+  pub fn workers_not_cleaned(location: &str, number_of_big_workers: &str, number_of_small_workers: &str) -> Self {
+    Self::new(
+      0x00000011_u32,
+      location,
+      number_of_big_workers,
+      number_of_small_workers,
+      "",
+    )
+  }
+
+  pub fn fail_to_create_worker(location: &str, upstream_error: &str) -> Self {
+    Self::new(
+      0x00000012_u32,
+      location,
+      upstream_error,
+      "",
+      "",
+    )
+  }
+
+  pub fn fail_to_listen_event(location: &str, event_name: &str, upstream_error: &str) -> Self {
+    Self::new(
+      0x00000013_u32,
+      location,
+      event_name,
+      upstream_error,
+      "",
+    )
+  }
+
+  pub fn fail_to_unlisten_event(location: &str, event_name: &str, upstream_error: &str) -> Self {
+    Self::new(
+      0x00000014_u32,
+      location,
+      event_name,
+      upstream_error,
+      "",
+    )
+  }
+
+  pub fn no_workers(location: &str) -> Self {
+    Self::new(
+      0x00000015_u32,
+      location,
+      "",
+      "",
+      "",
+    )
+  }
+
+  pub fn fail_to_set_property(location: &str, property_name: &str, upstream_error: &str) -> Self {
+    Self::new(
+      0x00000016_u32,
+      location,
+      property_name,
+      upstream_error,
+      "",
+    )
+  }
+
+  pub fn fail_to_post_message(location: &str, upstream_error: &str) -> Self {
+    Self::new(
+      0x00000017_u32,
+      location,
+      upstream_error,
+      "",
+      "",
+    )
+  }
 }

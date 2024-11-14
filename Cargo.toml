@@ -45,7 +45,11 @@ features = [
     "ReadableStreamGetReaderOptions",
     "ReadableStreamReaderMode",
     "ReadableStreamByobReader",
-    "Performance"
+    "Performance",
+    "Worker",
+    "WorkerOptions",
+    "WorkerType",
+    "MessageEvent"
 ]
 
 [dependencies]
