@@ -1,0 +1,26 @@
+[package]
+name = "wasm-zip-stream"
+description = "A stream style zip compressing tool targeting wasm"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+wasm-bindgen-futures        = { workspace = true }
+console_error_panic_hook    = { workspace = true }
+
+[dependencies.web-sys]
+workspace = true
+features = []
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.34"

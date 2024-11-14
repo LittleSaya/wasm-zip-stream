@@ -1,0 +1,58 @@
+[package]
+name = "wasm-zip-stream-manager"
+description = "A stream style zip compressing tool targeting wasm (manager)"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+wasm-bindgen-futures        = { workspace = true }
+console_error_panic_hook    = { workspace = true }
+flate2                      = { workspace = true }
+crc32fast                   = { workspace = true }
+
+[dependencies.web-sys]
+workspace = true
+features = [
+    "console",
+    "Window",
+    "Document",
+    "Element",
+    "HtmlDivElement",
+    "HtmlButtonElement",
+    "File",
+    "DragEvent",
+    "DataTransfer",
+    "DataTransferItemList",
+    "DataTransferItem",
+    "FileSystemEntry",
+    "FileSystemFileEntry",
+    "FileSystemDirectoryEntry",
+    "DomException",
+    "FileSystemDirectoryReader",
+    "FileSystem",
+    "PointerEvent",
+    "WritableStreamDefaultWriter",
+    "FileSystemFlags",
+    "ReadableStream",
+    "ReadableStreamGetReaderOptions",
+    "ReadableStreamReaderMode",
+    "ReadableStreamByobReader",
+    "Performance",
+    "Worker",
+    "WorkerOptions",
+    "WorkerType",
+    "MessageEvent"
+]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.34"

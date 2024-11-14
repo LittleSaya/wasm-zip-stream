@@ -1,71 +1,29 @@
-[package]
-name = "wasm-zip-stream"
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+
+[workspace.package]
 version = "0.1.0"
 authors = ["April is a Rabbit <16049823+LittleSaya@users.noreply.github.com>"]
 edition = "2018"
 license = "Apache-2.0"
-description = "A stream style zip compressing tool targeting wasm"
 homepage = "https://github.com/LittleSaya/wasm-zip-stream"
 repository = "https://github.com/LittleSaya/wasm-zip-stream"
 readme = "README.md"
 keywords = ["zip", "wasm", "stream", "compress"]
 categories = ["compression", "wasm", "web-programming"]
-exclude = ["example"]
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
-[features]
-default = ["console_error_panic_hook"]
-
-[dependencies.web-sys]
-version = "=0.3.72"
-features = [
-    "console",
-    "Window",
-    "Document",
-    "Element",
-    "HtmlDivElement",
-    "HtmlButtonElement",
-    "File",
-    "DragEvent",
-    "DataTransfer",
-    "DataTransferItemList",
-    "DataTransferItem",
-    "FileSystemEntry",
-    "FileSystemFileEntry",
-    "FileSystemDirectoryEntry",
-    "DomException",
-    "FileSystemDirectoryReader",
-    "FileSystem",
-    "PointerEvent",
-    "WritableStreamDefaultWriter",
-    "FileSystemFlags",
-    "ReadableStream",
-    "ReadableStreamGetReaderOptions",
-    "ReadableStreamReaderMode",
-    "ReadableStreamByobReader",
-    "Performance",
-    "Worker",
-    "WorkerOptions",
-    "WorkerType",
-    "MessageEvent"
-]
-
-[dependencies]
-wasm-bindgen-futures = "=0.4.45"
-flate2 = "=1.0.34"
-crc32fast = "=1.4.2"
-futures = "=0.3.31"
+[workspace.dependencies]
+web-sys                 = "=0.3.72"
+wasm-bindgen-futures    = "=0.4.45"
+flate2                  = "=1.0.34"
+crc32fast               = "=1.4.2"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
-console_error_panic_hook = { version = "0.1.7", optional = true }
-
-[dev-dependencies]
-wasm-bindgen-test = "0.3.34"
+console_error_panic_hook = { version = "0.1.7" }
 
 [profile.release]
 # Tell `rustc` to optimize for small code size.
