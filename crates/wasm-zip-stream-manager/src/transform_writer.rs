@@ -3,7 +3,7 @@
 use std::io::Write;
 
 use crate::{prelude::*, utils};
-use crate::wasm_error::WasmError;
+use wasm_zip_stream::wasm_error::WasmError;
 
 pub struct TransformWriter<'a> {
   writer: &'a web_sys::WritableStreamDefaultWriter,

@@ -14,10 +14,22 @@ categories.workspace = true
 [dependencies]
 wasm-bindgen-futures        = { workspace = true }
 console_error_panic_hook    = { workspace = true }
+flate2                      = { workspace = true }
+crc32fast                   = { workspace = true }
+wasm-zip-stream             = { path = "../wasm-zip-stream" }
 
 [dependencies.web-sys]
 workspace = true
-features = []
+features = [
+    "console",
+    "File",
+    "ReadableStream",
+    "ReadableStreamGetReaderOptions",
+    "ReadableStreamReaderMode",
+    "ReadableStreamByobReader",
+    "Performance",
+    "MessageEvent"
+]
 
 [lib]
 crate-type = ["cdylib", "rlib"]

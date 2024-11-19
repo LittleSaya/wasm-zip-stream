@@ -1,4 +1,5 @@
-use crate::prelude::*;
+use wasm_bindgen_futures::wasm_bindgen;
+use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(getter_with_clone)]
 #[derive(Debug)]

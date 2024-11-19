@@ -1,6 +1,9 @@
 use std::rc::Rc;
 
-use crate::{manager_context::{ManagerContext, ZipEntry}, prelude::*, utils, wasm_error::WasmError};
+use wasm_zip_stream::WasmError;
+use wasm_zip_stream::message;
+
+use crate::{manager_context::{ManagerContext, ZipEntry}, prelude::*, utils};
 
 #[wasm_bindgen]
 extern "C" {
@@ -23,39 +26,21 @@ extern "C" {
 const PROMISE_ID_WORKER_LOADED: &'static str = "worker_loaded";
 
 #[wasm_bindgen]
-extern "C" {
-  pub type GenericMessageData;
-
-  #[wasm_bindgen(method, getter)]
-  pub fn generic_message_type(this: &GenericMessageData) -> String;
-}
-
-const GENERIC_MESSAGE_TYPE_WORKER: &'static str = "worker";
-
-#[wasm_bindgen]
-extern "C" {
-  pub type WorkerMessageData;
-
-  #[wasm_bindgen(method, getter)]
-  pub fn worker_message_type(this: &WorkerMessageData) -> String;
-}
-
-const WORKER_MESSAGE_TYPE_LOADED: &'static str = "loaded";
-
-#[wasm_bindgen]
 pub struct ManagerHandles {
-  context       : Rc<ManagerContext>,
-  worker_path   : String,
-  big_workers   : Vec<web_sys::Worker>,
-  small_workers : Vec<web_sys::Worker>,
-  scan_progress : Option<js_sys::Function>,
+  context          : Rc<ManagerContext>,
+  worker_path      : String,
+  worker_wasm_path : String,
+  big_workers      : Vec<web_sys::Worker>,
+  small_workers    : Vec<web_sys::Worker>,
+  scan_progress    : Option<js_sys::Function>,
 }
 
 impl ManagerHandles {
-  pub fn new(context: Rc<ManagerContext>, worker_path: String) -> Self {
+  pub fn new(context: Rc<ManagerContext>, worker_path: String, worker_wasm_path: String) -> Self {
     Self {
       context,
       worker_path,
+      worker_wasm_path,
       big_workers: Vec::new(),
       small_workers: Vec::new(),
       scan_progress: None,
@@ -103,12 +88,12 @@ impl ManagerHandles {
       let mut ready_count = 0_u32;
       let ready_total = number_of_workers;
       let message_handler = Closure::<dyn FnMut(web_sys::MessageEvent)>::new(move |ev: web_sys::MessageEvent| {
-        let data: GenericMessageData = ev.data().unchecked_into();
+        let data: message::GenericMessageData = ev.data().unchecked_into();
         let generic_message_type = data.generic_message_type();
-        if generic_message_type == GENERIC_MESSAGE_TYPE_WORKER {
-          let data: WorkerMessageData = data.unchecked_into();
+        if generic_message_type == message::GENERIC_MESSAGE_TYPE_WORKER {
+          let data: message::WorkerMessageData = data.unchecked_into();
           let worker_message_type = data.worker_message_type();
-          if worker_message_type == WORKER_MESSAGE_TYPE_LOADED {
+          if worker_message_type == message::WORKER_MESSAGE_TYPE_LOADED {
             ready_count += 1;
             if ready_count == ready_total {
               resolve_promise(PROMISE_ID_WORKER_LOADED);

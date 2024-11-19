@@ -12,7 +12,7 @@ use crate::transform_writer::TransformWriter;
 use crate::utils::ReadResult;
 use crate::{appnote63, js_futures, prelude::*, utils};
 use crate::context::{Context, FilePath};
-use crate::wasm_error::WasmError;
+use wasm_zip_stream::wasm_error::WasmError;
 
 #[wasm_bindgen]
 pub struct Handles {

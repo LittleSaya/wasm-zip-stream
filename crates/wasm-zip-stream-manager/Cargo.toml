@@ -16,6 +16,7 @@ wasm-bindgen-futures        = { workspace = true }
 console_error_panic_hook    = { workspace = true }
 flate2                      = { workspace = true }
 crc32fast                   = { workspace = true }
+wasm-zip-stream             = { path = "../wasm-zip-stream" }
 
 [dependencies.web-sys]
 workspace = true
