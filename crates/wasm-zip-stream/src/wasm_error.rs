@@ -261,4 +261,14 @@ impl WasmError {
       "",
     )
   }
+
+  pub fn fail_to_initialize_worker_wasm(location: &str, upstream_error: &str) -> Self {
+    Self::new(
+      0x00000018_u32,
+      location,
+      upstream_error,
+      "",
+      "",
+    )
+  }
 }

@@ -24,6 +24,7 @@ extern "C" {
 }
 
 const PROMISE_ID_WORKER_LOADED: &'static str = "worker_loaded";
+const PROMISE_ID_WORKER_INITIALIZE_WASM: &'static str = "worker_initialize_wasm";
 
 #[wasm_bindgen]
 pub struct ManagerHandles {
@@ -85,6 +86,8 @@ impl ManagerHandles {
 
     // load workers
     {
+      web_sys::console::log_1(&JsValue::from_str("loading workers..."));
+
       let mut ready_count = 0_u32;
       let ready_total = number_of_workers;
       let message_handler = Closure::<dyn FnMut(web_sys::MessageEvent)>::new(move |ev: web_sys::MessageEvent| {
@@ -134,6 +137,7 @@ impl ManagerHandles {
         self.small_workers.push(worker);
       }
 
+      // TODO: timeout and error handling
       utils::await_promise(create_promise(PROMISE_ID_WORKER_LOADED)).await.unwrap();
 
       for worker in self.big_workers.iter() {
@@ -147,6 +151,73 @@ impl ManagerHandles {
           return Err(WasmError::fail_to_unlisten_event(LOCATION, "message", &format!("{:?}", e)));
         }
       }
+
+      web_sys::console::log_1(&JsValue::from_str("workers loaded"));
+    }
+
+    // workers initialize wasm
+    {
+      web_sys::console::log_1(&JsValue::from_str("loading workers' wasm..."));
+
+      let mut ready_count = 0_u32;
+      let ready_total = number_of_workers;
+      let message_handler = Closure::<dyn FnMut(web_sys::MessageEvent)>::new(move |ev: web_sys::MessageEvent| {
+        let data: message::GenericMessageData = ev.data().unchecked_into();
+        let generic_message_type = data.generic_message_type();
+        if generic_message_type == message::GENERIC_MESSAGE_TYPE_WORKER {
+          let data: message::WorkerMessageData = data.unchecked_into();
+          let worker_message_type = data.worker_message_type();
+          if worker_message_type == message::WORKER_MESSAGE_TYPE_INITIALIZE_WASM_SUCCESS {
+            ready_count += 1;
+            if ready_count == ready_total {
+              resolve_promise(PROMISE_ID_WORKER_INITIALIZE_WASM);
+            }
+          } else if worker_message_type == message::WORKER_MESSAGE_TYPE_INITIALIZE_WASM_FAIL {
+            let data: message::WorkerInitializeWasmFailMessageData = data.unchecked_into();
+            reject_promise(PROMISE_ID_WORKER_INITIALIZE_WASM, &data.detail());
+          } else {
+            reject_promise(PROMISE_ID_WORKER_INITIALIZE_WASM, &JsValue::from_str(&format!("Unknown worker message type: {}", worker_message_type)));
+          }
+        }
+      }).into_js_value();
+
+      let message_to_worker = message::WorkerInitializeWasmMessageData::new(&self.worker_wasm_path)?;
+
+      for worker in self.big_workers.iter() {
+        if let Err(e) = worker.add_event_listener_with_callback("message", message_handler.unchecked_ref()) {
+          return Err(WasmError::fail_to_listen_event(LOCATION, "message", &format!("{:?}", e)));
+        }
+        if let Err(e) = worker.post_message(&message_to_worker) {
+          return Err(WasmError::fail_to_post_message(LOCATION, &format!("{:?}", e)));
+        }
+      }
+
+      for worker in self.small_workers.iter() {
+        if let Err(e) = worker.add_event_listener_with_callback("message", message_handler.unchecked_ref()) {
+          return Err(WasmError::fail_to_listen_event(LOCATION, "message", &format!("{:?}", e)));
+        }
+        if let Err(e) = worker.post_message(&message_to_worker) {
+          return Err(WasmError::fail_to_post_message(LOCATION, &format!("{:?}", e)));
+        }
+      }
+
+      if let Err(e) = utils::await_promise(create_promise(PROMISE_ID_WORKER_INITIALIZE_WASM)).await {
+        return Err(WasmError::fail_to_initialize_worker_wasm(LOCATION, &format!("{:?}", e)));
+      }
+
+      for worker in self.big_workers.iter() {
+        if let Err(e) = worker.remove_event_listener_with_callback("message", message_handler.unchecked_ref()) {
+          return Err(WasmError::fail_to_unlisten_event(LOCATION, "message", &format!("{:?}", e)));
+        }
+      }
+
+      for worker in self.small_workers.iter() {
+        if let Err(e) = worker.remove_event_listener_with_callback("message", message_handler.unchecked_ref()) {
+          return Err(WasmError::fail_to_unlisten_event(LOCATION, "message", &format!("{:?}", e)));
+        }
+      }
+
+      web_sys::console::log_1(&JsValue::from_str("workers' wasm initialized"));
     }
 
     Ok(JsValue::UNDEFINED)
