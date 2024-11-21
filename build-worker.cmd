@@ -1,5 +1,5 @@
 @echo off
 
-wasm-pack build --release --target web crates/wasm-zip-stream-manager
+cd %~dp0
 
 wasm-pack build --release --target web crates/wasm-zip-stream-worker
